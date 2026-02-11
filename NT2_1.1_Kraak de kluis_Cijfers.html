@@ -3,262 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kraak de Kluis - NT2</title>
+    <title>NT2 Bingo Safe</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #2c3e50;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            color: white;
-        }
-
-        /* DE KLUIS CONTAINER */
-        .safe-box {
-            background: linear-gradient(145deg, #4b5d67, #3c4b52);
-            width: 340px;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 10px 10px 30px rgba(0,0,0,0.5), inset 2px 2px 5px rgba(255,255,255,0.1);
-            border: 8px solid #222;
-            position: relative;
-            text-align: center;
-        }
-
-        /* HET DISPLAY */
-        .display {
-            background-color: #000;
-            color: #0f0; /* Retro Groen */
-            font-family: 'Courier New', monospace;
-            font-size: 2.5rem;
-            height: 60px;
-            line-height: 60px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 4px solid #555;
-            box-shadow: inset 0 0 10px #000;
-            letter-spacing: 5px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* KNOPPEN */
-        .keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .key {
-            background: #e0e0e0;
-            color: #333;
-            border: none;
-            padding: 15px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #999;
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        .key:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #999;
-        }
-
-        .key-action { background: #f1c40f; } /* Geel voor correctie */
-        .key-enter { background: #2ecc71; color: white; box-shadow: 0 4px 0 #27ae60; }
-
-        /* CONTROLS */
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-        }
-
-        .btn-small {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .btn-small:hover { background: #2980b9; }
-
-        /* DE DEUR ANIMATIE */
-        .door-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(46, 204, 113, 0.9);
-            border-radius: 12px;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-        }
-        .door-overlay h1 { font-size: 3rem; margin: 0; text-shadow: 2px 2px 0 #000; }
-        .gold-bar { font-size: 4rem; margin-top: 10px; animation: bounce 1s infinite; }
-
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        :root { --primary: #2196F3; --success: #4CAF50; --text: #333; }
+        body { font-family: 'Segoe UI', sans-serif; background: transparent; margin: 0; padding: 5px; text-align: center; color: var(--text); }
+        .container { max-width: 500px; margin: 0 auto; background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         
-        /* Level Selectie */
-        select { padding: 5px; border-radius: 5px; }
-
+        .menu-btn { display: block; width: 100%; padding: 12px; margin: 5px 0; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; font-size: 1rem; }
+        .btn-teacher { background: var(--primary); }
+        .btn-student { background: var(--success); }
+        .btn-reset { background: #f44336; }
+        
+        select { padding: 8px; width: 100%; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        
+        #current-number { font-size: 4rem; font-weight: bold; color: var(--primary); background: #eef; border-radius: 8px; margin: 10px 0; height: 80px; display: flex; align-items: center; justify-content: center; }
+        .history-box { max-height: 50px; overflow-y: auto; font-size: 0.85rem; color: #666; border-top: 1px solid #eee; padding-top: 5px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
+        .cell { background: #eee; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; border-radius: 5px; cursor: pointer; user-select: none; border: 2px solid transparent; }
+        .cell.marked { background: var(--success); color: white; text-decoration: line-through; }
+        
+        .hidden { display: none; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: white; }
+        .overlay h1 { font-size: 3rem; animation: pop 0.5s infinite alternate; }
+        @keyframes pop { from { transform: scale(1); } to { transform: scale(1.1); } }
     </style>
 </head>
 <body>
 
-    <div class="safe-box">
-        <div class="door-overlay" id="win-screen">
-            <h1>OPEN!</h1>
-            <div class="gold-bar">💰💎💰</div>
-            <button class="btn-small" style="margin-top:20px; background:#fff; color:#333;" onclick="startGame()">Volgende Kluis</button>
-        </div>
+    <div class="container" id="menu">
+        <h2>Kies uw rol:</h2>
+        <button class="menu-btn btn-teacher" onclick="init('teacher')">👨‍🏫 Docent</button>
+        <button class="menu-btn btn-student" onclick="init('student')">🙋 Cursist</button>
+    </div>
 
-        <div class="controls">
-            <select id="level-select">
-                <option value="2">Niveau 1 (2 cijfers)</option>
-                <option value="3" selected>Niveau 2 (3 cijfers)</option>
-                <option value="4">Niveau 3 (4 cijfers)</option>
-            </select>
-            <button class="btn-small" onclick="playAudio()">🔊 Herhaal</button>
-        </div>
+    <div class="container hidden" id="teacher-ui">
+        <select id="t-range" onchange="resetGame()">
+            <option value="20">1 - 20</option>
+            <option value="50">1 - 50</option>
+            <option value="100">1 - 100</option>
+            <option value="tens">Tientallen</option>
+        </select>
+        <div id="current-number">?</div>
+        <button class="menu-btn btn-teacher" onclick="drawNumber()">Trek Nummer</button>
+        <button class="menu-btn btn-reset" onclick="resetGame()">Reset</button>
+        <div class="history-box">Geschiedenis: <span id="history-list">-</span></div>
+        <button onclick="location.reload()" style="background:none; border:none; color:#999; cursor:pointer; margin-top:5px;">Terug</button>
+    </div>
 
-        <div class="display" id="display">_ _ _</div>
+    <div class="container hidden" id="student-ui">
+        <select id="s-range">
+            <option value="20">1 - 20</option>
+            <option value="50">1 - 50</option>
+            <option value="100">1 - 100</option>
+            <option value="tens">Tientallen</option>
+        </select>
+        <button class="menu-btn btn-student" onclick="generateCard()">Nieuwe Kaart</button>
+        <div class="grid" id="bingo-card"></div>
+        <button onclick="location.reload()" style="background:none; border:none; color:#999; cursor:pointer; margin-top:10px;">Terug</button>
+    </div>
 
-        <div class="keypad">
-            <button class="key" onclick="press(1)">1</button>
-            <button class="key" onclick="press(2)">2</button>
-            <button class="key" onclick="press(3)">3</button>
-            <button class="key" onclick="press(4)">4</button>
-            <button class="key" onclick="press(5)">5</button>
-            <button class="key" onclick="press(6)">6</button>
-            <button class="key" onclick="press(7)">7</button>
-            <button class="key" onclick="press(8)">8</button>
-            <button class="key" onclick="press(9)">9</button>
-            <button class="key key-action" onclick="clearInput()">C</button>
-            <button class="key" onclick="press(0)">0</button>
-            <button class="key key-enter" onclick="checkCode()">OK</button>
-        </div>
-        
-        <div style="font-size: 0.8rem; color: #ccc; margin-top:10px;">
-            Luister naar de code en toets in.
-        </div>
+    <div class="overlay" id="win-screen">
+        <h1>BINGO!</h1>
+        <button class="menu-btn btn-student" style="width:auto; padding:10px 30px;" onclick="document.getElementById('win-screen').style.display='none'">Sluiten</button>
     </div>
 
 <script>
-    // --- VARIABELEN ---
-    let secretCode = [];
-    let userContext = ""; // Wat de gebruiker intypt
+    // --- VEILIGE AUDIO SETUP ---
     let voices = [];
-    
-    // --- AUDIO SETUP ---
-    function loadVoices() {
-        voices = window.speechSynthesis.getVoices().filter(v => v.lang.includes('nl') || v.lang.includes('NL'));
+    const synth = window.speechSynthesis;
+    let audioEnabled = false;
+
+    if (synth) {
+        audioEnabled = true;
+        function loadVoices() {
+            voices = synth.getVoices().filter(v => v.lang.includes('nl'));
+        }
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
     }
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    loadVoices();
 
     function speak(text) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        if(voices.length > 0) u.voice = voices[0]; // Eerste NL stem
-        u.rate = 0.85; // Iets trager
-        window.speechSynthesis.speak(u);
-    }
-
-    // --- SPEL LOGICA ---
-    function startGame() {
-        // Reset alles
-        document.getElementById('win-screen').style.display = 'none';
-        userContext = "";
-        secretCode = [];
-        
-        // Bepaal lengte code
-        const length = parseInt(document.getElementById('level-select').value);
-        
-        // Genereer code (getallen tussen 0 en 99)
-        for(let i=0; i<length; i++) {
-            secretCode.push(Math.floor(Math.random() * 100)); // 0 tot 99
+        if (!audioEnabled) return; // Doe niets als audio stuk is
+        try {
+            synth.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            if(voices.length > 0) u.voice = voices[0];
+            u.rate = 0.85; 
+            synth.speak(u);
+        } catch(e) {
+            console.log("Audio fout:", e);
         }
-        
-        updateDisplay();
-        
-        // Wacht even en speel dan audio
-        setTimeout(playAudio, 500);
     }
 
-    function playAudio() {
-        // Zegt: "De code is: [pauze] 15 [pauze] 88 ..."
-        let textToSay = "De code is... ";
-        secretCode.forEach(num => {
-            textToSay += num + ". ... "; // Puntjes zorgen voor pauze
+    // --- GAME LOGICA ---
+    let drawnNumbers = [];
+
+    function init(role) {
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById(role + '-ui').classList.remove('hidden');
+        if(role === 'student') generateCard();
+    }
+
+    function getRandom(mode) {
+        if(mode === 'tens') return (Math.floor(Math.random() * 10) + 1) * 10;
+        return Math.floor(Math.random() * parseInt(mode)) + 1;
+    }
+
+    function drawNumber() {
+        const mode = document.getElementById('t-range').value;
+        const limit = mode === 'tens' ? 10 : parseInt(mode);
+        
+        if (drawnNumbers.length >= limit) {
+            alert("Alle nummers zijn getrokken!");
+            return;
+        }
+
+        let num;
+        do { num = getRandom(mode); } while (drawnNumbers.includes(num));
+
+        drawnNumbers.unshift(num);
+        document.getElementById('current-number').innerText = num;
+        document.getElementById('history-list').innerText = drawnNumbers.join(', ');
+        speak(num);
+    }
+
+    function resetGame() {
+        drawnNumbers = [];
+        document.getElementById('current-number').innerText = "?";
+        document.getElementById('history-list').innerText = "-";
+    }
+
+    function generateCard() {
+        const grid = document.getElementById('bingo-card');
+        const mode = document.getElementById('s-range').value;
+        grid.innerHTML = '';
+        
+        let nums = new Set();
+        let safety = 0;
+        while(nums.size < 9 && safety < 500) {
+            nums.add(getRandom(mode));
+            safety++;
+        }
+
+        Array.from(nums).sort((a,b)=>a-b).forEach(n => {
+            let d = document.createElement('div');
+            d.className = 'cell';
+            d.innerText = n;
+            d.onclick = () => {
+                d.classList.toggle('marked');
+                checkWin();
+            };
+            grid.appendChild(d);
         });
-        speak(textToSay);
     }
 
-    // --- UI LOGICA ---
-    function press(num) {
-        // Voeg nummer toe aan input. Let op: we typen de volledige getallen niet in, 
-        // de cursist typt de reeks. Maar wacht...
-        // Bij "Kluis kraken" typ je meestal cijfer voor cijfer.
-        // ECHTER: Als de audio zegt "Vijftien", moet de cursist '1' en '5' typen.
-        
-        // We limiteren de input lengte voor veiligheid
-        if(userContext.length < 12) {
-            userContext += num;
-            updateDisplay();
-        }
-    }
-
-    function clearInput() {
-        userContext = "";
-        updateDisplay();
-    }
-
-    function updateDisplay() {
-        // Toon streepjes als er niets is, of sterretjes/cijfers
-        if(userContext === "") {
-            document.getElementById('display').innerText = "_ _ _";
-        } else {
-            document.getElementById('display').innerText = userContext;
-        }
-    }
-
-    function checkCode() {
-        // We moeten de 'secretCode' array omzetten naar een string om te vergelijken
-        // Voorbeeld: Array [15, 8] wordt String "158"
-        const correctString = secretCode.join('');
-        
-        if (userContext === correctString) {
-            // GOED!
-            speak("De kluis is open! Fantastisch.");
+    function checkWin() {
+        const total = document.querySelectorAll('#student-ui .cell').length;
+        const marked = document.querySelectorAll('#student-ui .cell.marked').length;
+        if(total === marked && total > 0) {
+            speak("Bingo! Ik heb bingo!");
             document.getElementById('win-screen').style.display = 'flex';
-        } else {
-            // FOUT!
-            speak("Fout. Probeer het nog eens.");
-            document.getElementById('display').innerText = "FOUT";
-            document.getElementById('display').style.color = "red";
-            
-            setTimeout(() => {
-                userContext = "";
-                document.getElementById('display').style.color = "#0f0";
-                updateDisplay();
-            }, 1500);
         }
     }
-
-    // Start spel bij laden
-    startGame();
-
 </script>
 </body>
 </html>
