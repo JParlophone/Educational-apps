@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Niet/Geen Sorteermachine (NT2)</title>
+    <style>
+        :root {
+            --bg: #111827;
+            --panel: #1f2937;
+            --accent: #f59e0b;
+            --good: #10b981;
+            --bad: #ef4444;
+            --text: #f9fafb;
+            --belt: #4b5563;
+            --belt-line: #9ca3af;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at 20% 10%, #374151 0%, var(--bg) 55%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .machine {
+            width: min(920px, 100%);
+            background: linear-gradient(165deg, #334155, #0f172a);
+            border: 4px solid #0b1220;
+            border-radius: 20px;
+            box-shadow: 0 24px 50px rgba(0,0,0,0.5);
+            padding: 22px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.4rem, 2.2vw, 2rem);
+            color: #fde68a;
+        }
+
+        .subtitle {
+            margin: 6px 0 16px;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+        }
+
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .pill {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: #1e293b;
+            border: 1px solid #475569;
+            font-size: 0.9rem;
+        }
+
+        .belt {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+            border-radius: 12px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--belt) 0 30px,
+                #374151 30px 60px
+            );
+            border: 3px solid #0f172a;
+        }
+
+        .belt::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,255,255,0.07) 0 2px,
+                transparent 2px 18px
+            );
+            pointer-events: none;
+        }
+
+        .card {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            min-width: min(86vw, 420px);
+            max-width: 88%;
+            left: 100%;
+            background: #f8fafc;
+            color: #0f172a;
+            border-radius: 12px;
+            border: 3px solid #cbd5e1;
+            padding: 20px 18px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.35);
+            font-size: clamp(1rem, 2.8vw, 1.45rem);
+            font-weight: 600;
+        }
+
+        .gap {
+            display: inline-block;
+            min-width: 92px;
+            text-align: center;
+            margin: 0 4px;
+            padding: 0 8px;
+            border-bottom: 4px dashed #334155;
+            color: var(--accent);
+        }
+
+        .controls {
+            margin-top: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            min-width: 120px;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 12px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.3);
+            transition: transform 0.08s ease, opacity 0.2s;
+        }
+
+        button:active { transform: translateY(2px); }
+
+        .btn-niet {
+            background: var(--bad);
+            color: white;
+        }
+
+        .btn-geen {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-restart {
+            background: #facc15;
+            color: #111827;
+            flex-basis: 100%;
+            display: none;
+        }
+
+        .feedback {
+            min-height: 28px;
+            margin-top: 10px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .feedback.error {
+            color: #fecaca;
+            text-shadow: 0 0 10px rgba(239,68,68,0.6);
+        }
+
+        .alarm {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .alarm.active {
+            opacity: 1;
+            animation: blink 0.5s linear infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% { filter: brightness(1.1); }
+            50%, 100% { filter: brightness(0.45); }
+        }
+
+        .stopped {
+            outline: 4px solid rgba(239,68,68,0.65);
+        }
+    </style>
+</head>
+<body>
+    <main class="machine">
+        <h1>🏭 De Niet/Geen Sorteermachine</h1>
+        <p class="subtitle">Kies snel de juiste knop. De fabriek wordt steeds sneller!</p>
+
+        <section class="hud">
+            <div class="pill">Punten: <strong id="score">0</strong></div>
+            <div class="pill">Snelheid: <strong id="speed">1.0x</strong></div>
+            <div class="pill">Ronde: <strong id="round">1</strong></div>
+        </section>
+
+        <section class="belt" id="belt">
+            <div class="alarm" id="alarm">🚨</div>
+            <article class="card" id="card"></article>
+        </section>
+
+        <div class="controls">
+            <button class="btn-niet" onclick="submitAnswer('niet')">RODE KNOP: NIET</button>
+            <button class="btn-geen" onclick="submitAnswer('geen')">BLAUWE KNOP: GEEN</button>
+            <button class="btn-restart" id="restart" onclick="restartGame()">Opnieuw starten</button>
+        </div>
+
+        <p class="feedback" id="feedback">Druk op de juiste knop voordat de zin verdwijnt.</p>
+    </main>
+
+    <script>
+        const items = [
+            { text: 'Ik heb ... auto.', answer: 'geen' },
+            { text: 'Ik werk vandaag ... .', answer: 'niet' },
+            { text: 'Zij drinkt ... koffie.', answer: 'geen' },
+            { text: 'Wij gaan morgen ... naar school.', answer: 'niet' },
+            { text: 'Hij heeft ... broers.', answer: 'geen' },
+            { text: 'Ik spreek ... Engels.', answer: 'geen' },
+            { text: 'De docent is vandaag ... aanwezig.', answer: 'niet' },
+            { text: 'Er ligt ... boek op tafel.', answer: 'geen' },
+            { text: 'Mijn telefoon doet het ... .', answer: 'niet' },
+            { text: 'Ik eet ... vlees.', answer: 'geen' },
+            { text: 'Ze komt ... omdat ze ziek is.', answer: 'niet' },
+            { text: 'In de koelkast staat ... melk.', answer: 'geen' }
+        ];
+
+        const belt = document.getElementById('belt');
+        const card = document.getElementById('card');
+        const feedback = document.getElementById('feedback');
+        const scoreEl = document.getElementById('score');
+        const speedEl = document.getElementById('speed');
+        const roundEl = document.getElementById('round');
+        const alarmEl = document.getElementById('alarm');
+        const restartBtn = document.getElementById('restart');
+
+        let state = {
+            score: 0,
+            round: 1,
+            speed: 1,
+            x: 100,
+            activeItem: null,
+            running: true,
+            pausedUntil: 0,
+            lastTime: 0,
+            gameOver: false
+        };
+
+        function pickItem() {
+            const idx = Math.floor(Math.random() * items.length);
+            return items[idx];
+        }
+
+        function renderSentence(item) {
+            const html = item.text.replace('...', '<span class="gap">___</span>');
+            card.innerHTML = html;
+        }
+
+        function spawnNext() {
+            state.activeItem = pickItem();
+            state.x = 100;
+            renderSentence(state.activeItem);
+            roundEl.textContent = state.round;
+            speedEl.textContent = `${state.speed.toFixed(1)}x`;
+        }
+
+        function setFeedback(message, isError = false) {
+            feedback.textContent = message;
+            feedback.classList.toggle('error', isError);
+        }
+
+        function stopBeltWithAlarm(message) {
+            state.pausedUntil = performance.now() + 1300;
+            alarmEl.classList.add('active');
+            belt.classList.add('stopped');
+            setFeedback(`FOUT! ${message} 🚨 Band staat stil...`, true);
+            if (navigator.vibrate) {
+                navigator.vibrate([120, 90, 120]);
+            }
+            setTimeout(() => {
+                alarmEl.classList.remove('active');
+                belt.classList.remove('stopped');
+                if (!state.gameOver) {
+                    setFeedback('Band gestart. Kies de juiste knop!');
+                }
+            }, 1300);
+        }
+
+        function submitAnswer(choice) {
+            if (!state.running || state.gameOver || !state.activeItem) return;
+
+            if (choice === state.activeItem.answer) {
+                state.score += 1;
+                state.round += 1;
+                state.speed = Math.min(3.2, state.speed + 0.12);
+                scoreEl.textContent = state.score;
+                setFeedback(`Goed! "${choice.toUpperCase()}" is correct. ✅`);
+                spawnNext();
+            } else {
+                state.speed = Math.max(0.9, state.speed - 0.1);
+                speedEl.textContent = `${state.speed.toFixed(1)}x`;
+                stopBeltWithAlarm(`Het juiste antwoord was "${state.activeItem.answer.toUpperCase()}".`);
+            }
+        }
+
+        function gameOver(reason) {
+            state.gameOver = true;
+            state.running = false;
+            setFeedback(reason, true);
+            restartBtn.style.display = 'block';
+        }
+
+        function restartGame() {
+            state = {
+                score: 0,
+                round: 1,
+                speed: 1,
+                x: 100,
+                activeItem: null,
+                running: true,
+                pausedUntil: 0,
+                lastTime: 0,
+                gameOver: false
+            };
+            scoreEl.textContent = '0';
+            speedEl.textContent = '1.0x';
+            roundEl.textContent = '1';
+            restartBtn.style.display = 'none';
+            setFeedback('Nieuw spel gestart. Veel succes!');
+            spawnNext();
+            requestAnimationFrame(tick);
+        }
+
+        function tick(now) {
+            if (!state.running) return;
+
+            if (!state.lastTime) {
+                state.lastTime = now;
+            }
+
+            const dt = (now - state.lastTime) / 1000;
+            state.lastTime = now;
+
+            if (now < state.pausedUntil) {
+                requestAnimationFrame(tick);
+                return;
+            }
+
+            state.x -= dt * 32 * state.speed;
+            card.style.left = `${state.x}%`;
+
+            if (state.x < -62) {
+                gameOver('Te laat! De zin is van de band gevallen. Einde spel.');
+                return;
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        // Keyboard controls for classroom projector use
+        document.addEventListener('keydown', (event) => {
+            if (event.key.toLowerCase() === 'n') submitAnswer('niet');
+            if (event.key.toLowerCase() === 'g') submitAnswer('geen');
+            if (event.key.toLowerCase() === 'r' && state.gameOver) restartGame();
+        });
+
+        spawnNext();
+        requestAnimationFrame(tick);
+    </script>
+</body>
+</html>
