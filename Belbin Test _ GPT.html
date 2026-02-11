@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Erasmushogeschool Brussel — Teamroltest</title>
+
+<style>
+:root{
+  --ehb-red:#E30613;
+  --ehb-black:#000000;
+  --border:#e6e7ea;
+  --text:#111;
+  --muted:#5a5f6a;
+  --bg:#ffffff;
+  --radius:10px;
+  --emoji-col:2.0rem; /* perfect alignment */
+  --ease:cubic-bezier(.2,.9,.2,1);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:Arial, Helvetica, sans-serif;
+  color:var(--text);
+}
+
+/* Compact top */
+.brandbar{height:6px;background:var(--ehb-red)}
+header{padding:12px 16px 8px 16px}
+.school{font-weight:800;font-size:.95rem;color:var(--ehb-black)}
+.testname{font-weight:900;font-size:1.15rem;margin:2px 0 0 0}
+
+/* Meta bar (like screenshot) */
+.metaBar{
+  padding:10px 16px;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.leftMeta{min-width:220px}
+.qCount{font-size:.95rem;color:var(--muted)}
+.qTitle{font-size:1.05rem;font-weight:900;margin-top:2px}
+
+.rightMeta{
+  flex:1 1 260px;
+  min-width:260px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:flex-end;
+}
+.progressRow{
+  width:100%;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  font-size:.95rem;
+  color:var(--muted);
+}
+.bar{
+  width:100%;
+  height:8px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  overflow:hidden;
+  background:#fff;
+}
+.fill{
+  height:100%;
+  width:0%;
+  background:var(--ehb-red);
+  transition:width 260ms var(--ease);
+}
+
+/* Main */
+.main{padding:12px 16px 12px 16px}
+.questionText{
+  font-size:1rem;
+  line-height:1.35;
+  margin:0 0 10px 0;
+}
+.options{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.opt{
+  display:grid;
+  grid-template-columns: var(--emoji-col) 1fr auto;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  cursor:pointer;
+  transition:background .12s ease, border-color .12s ease;
+  background:#fff;
+}
+.opt:hover{background:#f8f8f8}
+.emoji{text-align:center}
+.optText{font-size:.98rem;line-height:1.25}
+.radio{
+  width:16px;height:16px;border:2px solid #c8ccd4;border-radius:50%;
+}
+.opt.selected{
+  border-color:var(--ehb-red);
+  background:rgba(227,6,19,.05);
+}
+.opt.selected .radio{
+  border-color:var(--ehb-red);
+  background:var(--ehb-red);
+}
+
+/* Nav */
+.nav{
+  padding:10px 16px;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+}
+button{
+  padding:8px 14px;
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  background:#fff;
+  font-weight:800;
+  cursor:pointer;
+}
+button.primary{
+  background:var(--ehb-red);
+  color:#fff;
+  border-color:var(--ehb-red);
+}
+button:disabled{opacity:.4;cursor:not-allowed}
+
+.toast{
+  display:none;
+  margin:10px 16px 0 16px;
+  border:1px solid rgba(227,6,19,.25);
+  background:rgba(227,6,19,.06);
+  color:#7a0a12;
+  border-radius:var(--radius);
+  padding:8px 10px;
+  font-size:.95rem;
+}
+
+/* Results */
+.resultsWrap{padding:12px 16px}
+.resultsTitle{font-weight:900;font-size:1.05rem;margin:0 0 10px 0}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pill{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:10px;
+  flex:1 1 260px;
+  background:#fff;
+}
+.pill .k{color:var(--muted);font-size:.92rem}
+.pill .v{font-weight:900;margin-top:2px}
+.pill .d{color:var(--muted);font-size:.92rem;margin-top:6px;line-height:1.25}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  background:#fff;
+}
+th,td{padding:9px 10px;border-bottom:1px solid var(--border);font-size:.95rem;text-align:left}
+th{background:#fafafa;font-weight:900}
+tr:last-child td{border-bottom:none}
+.right{text-align:right}
+
+details{
+  margin-top:10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:8px 10px;
+  background:#fff;
+}
+summary{cursor:pointer;font-weight:900}
+summary::-webkit-details-marker{display:none}
+
+@media (prefers-reduced-motion: reduce){
+  .fill{transition:none}
+}
+</style>
+</head>
+
+<body>
+<div class="brandbar"></div>
+
+<header>
+  <div class="school">Erasmushogeschool Brussel</div>
+  <div class="testname">Teamroltest</div>
+</header>
+
+<!-- QUIZ -->
+<section id="quiz">
+  <div class="metaBar">
+    <div class="leftMeta">
+      <div class="qCount" id="qCount">Vraag 1 van 24</div>
+      <div class="qTitle" id="qTitle">—</div>
+    </div>
+    <div class="rightMeta">
+      <div class="progressRow">
+        <span>Voortgang</span>
+        <span id="pct">0%</span>
+      </div>
+      <div class="bar" aria-hidden="true"><div class="fill" id="fill"></div></div>
+    </div>
+  </div>
+
+  <div class="main" id="panel">
+    <p class="questionText" id="qText">—</p>
+    <div class="options" id="options"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="nav">
+    <button id="prevBtn" type="button">← Vorige</button>
+    <button id="nextBtn" class="primary" type="button" disabled>Volgende →</button>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="results" style="display:none;">
+  <div class="metaBar">
+    <div class="leftMeta">
+      <div class="qCount">Klaar</div>
+      <div class="qTitle">Jouw profiel</div>
+    </div>
+    <div class="rightMeta">
+      <div class="progressRow"><span>Afgerond</span><span>100%</span></div>
+      <div class="bar" aria-hidden="true"><div class="fill" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <div class="resultsWrap" id="resultsContent"></div>
+
+  <div class="nav">
+    <button id="restartBtn" type="button">↺ Opnieuw</button>
+    <button id="copyBtn" class="primary" type="button">📋 Kopieer resultaat</button>
+  </div>
+</section>
+
+<script>
+/* Intern model (onzichtbaar tijdens de test) */
+const ROLE = {
+  PL: { name:"Plant", desc:"Bedenkt originele ideeën en onverwachte oplossingen." },
+  RI: { name:"Brononderzoeker", desc:"Zoekt kansen buiten het team en brengt contacten/inputs binnen." },
+  CO: { name:"Voorzitter", desc:"Brengt structuur, verdeelt taken en bewaakt het doel." },
+  SH: { name:"Vormer", desc:"Duwt vooruit, houdt tempo en focust op resultaat." },
+  ME: { name:"Monitor (Waarnemer–Evaluator)", desc:"Denkt kritisch, weegt opties af en ziet risico’s." },
+  TW: { name:"Groepswerker", desc:"Versterkt samenwerking, luistert en bemiddelt." },
+  IMP:{ name:"Bedrijfsman", desc:"Maakt plannen praktisch en voert ze consequent uit." },
+  CF: { name:"Zorgdrager", desc:"Bewaakt kwaliteit, details en afwerking." },
+  SP: { name:"Specialist", desc:"Brengt diepgaande vakkennis en expertise in." }
+};
+
+const EMOJI = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣"];
+
+/* 24 vragen (zelfde set als eerder), 1 vraag per scherm */
+const QUESTIONS = [
+  { title:"Start van een project", q:"Je team start aan een nieuw groepswerk. Wat doe jij meestal eerst?",
+    opts:[
+      {t:"Ik zet meteen een uitdagend doel neer en wil tempo maken.", r:"SH"},
+      {t:"Ik bedenk een originele aanpak die het project onderscheidt.", r:"PL"},
+      {t:"Ik maak een concreet stappenplan en begin te organiseren.", r:"IMP"},
+      {t:"Ik let meteen op kwaliteit: wat moet zeker correct zijn?", r:"CF"},
+      {t:"Ik check hoe iedereen erbij zit en maak de samenwerking vlot.", r:"TW"},
+    ]},
+  { title:"Rollen verdelen", q:"Er zijn veel taken en niemand weet goed wie wat opneemt. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik breng overzicht en stel voor wie welke taak best opneemt.", r:"CO"},
+      {t:"Ik kom met een frisse invalshoek voor de aanpak.", r:"PL"},
+      {t:"Ik duw het team om snel te kiezen en te starten.", r:"SH"},
+      {t:"Ik pak een deel praktisch vast en zet het meteen in uitvoering.", r:"IMP"},
+      {t:"Ik duik diep in een specifiek inhoudelijk stuk en word daar expert in.", r:"SP"},
+    ]},
+  { title:"Beslissen tussen ideeën", q:"Er liggen verschillende ideeën op tafel. Hoe reageer jij meestal?",
+    opts:[
+      {t:"Ik vergelijk de opties rustig op voor- en nadelen.", r:"ME"},
+      {t:"Ik ga extern inspiratie of voorbeelden zoeken.", r:"RI"},
+      {t:"Ik help het team een keuze te maken en koers te houden.", r:"CO"},
+      {t:"Ik voeg nog een creatief alternatief toe dat niemand zag.", r:"PL"},
+      {t:"Ik zet aan tot actie: kiezen en testen.", r:"SH"},
+    ]},
+  { title:"Veel info verwerken", q:"Je team moet veel informatie verwerken in korte tijd. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik bewaak de afwerking: consistentie, foutjes en kwaliteit.", r:"CF"},
+      {t:"Ik organiseer het werk in duidelijke stappen en deadlines.", r:"IMP"},
+      {t:"Ik neem de vakinhoud waar ik sterk in ben en ga de diepte in.", r:"SP"},
+      {t:"Ik blijf kritisch: wat klopt echt en wat niet?", r:"ME"},
+      {t:"Ik zorg dat iedereen betrokken blijft en goed samenwerkt.", r:"TW"},
+    ]},
+  { title:"Nieuwe input nodig", q:"Jullie missen voorbeelden of externe input. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik ga actief contacten, bronnen of voorbeelden buiten het team zoeken.", r:"RI"},
+      {t:"Ik zet het om naar concrete taken zodat we toch vooruit kunnen.", r:"IMP"},
+      {t:"Ik hou de groep samen en zorg dat niemand afhaakt.", r:"TW"},
+      {t:"Ik kom met een originele oplossing zonder extra hulp.", r:"PL"},
+      {t:"Ik breng structuur in wat we precies nodig hebben.", r:"CO"},
+    ]},
+  { title:"Spanning in team", q:"Er ontstaat spanning in het team over afspraken. Wat is jouw reflex?",
+    opts:[
+      {t:"Ik maak een rationele analyse: wat zijn de feiten en afspraken?", r:"ME"},
+      {t:"Ik probeer te bemiddelen en de communicatie te herstellen.", r:"TW"},
+      {t:"Ik let op details: waar gaat het precies mis en wat moet gecorrigeerd?", r:"CF"},
+      {t:"Ik regel praktisch een nieuwe verdeling of workflow.", r:"IMP"},
+      {t:"Ik herfocus op het doel en zorg dat we beslissen.", r:"CO"},
+    ]},
+  { title:"Vastlopen", q:"Het project loopt vast. Hoe probeer jij meestal het los te trekken?",
+    opts:[
+      {t:"Ik bedenk een nieuwe invalshoek of creatieve doorbraak.", r:"PL"},
+      {t:"Ik haal externe tips of info binnen om weer te bewegen.", r:"RI"},
+      {t:"Ik weeg opties af en kies het meest haalbare pad.", r:"ME"},
+      {t:"Ik zet druk op tempo: we moeten nu doorpakken.", r:"SH"},
+      {t:"Ik ga heel precies na wat nog ontbreekt en werk dat weg.", r:"CF"},
+    ]},
+  { title:"Rommelige meeting", q:"In een meeting wordt het rommelig. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik breng richting en vat samen zodat er beslissingen vallen.", r:"CO"},
+      {t:"Ik maak meteen concrete acties van wat gezegd wordt.", r:"IMP"},
+      {t:"Ik let op de sfeer en geef stillere mensen ruimte.", r:"TW"},
+      {t:"Ik blijf kritisch en bewaak dat we logisch blijven.", r:"ME"},
+      {t:"Ik push om knopen door te hakken.", r:"SH"},
+    ]},
+  { title:"Kwaliteit vs snelheid", q:"Je merkt dat er slordigheden insluipen omdat het snel moet. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik check details en corrigeer zodat het eindresultaat klopt.", r:"CF"},
+      {t:"Ik analyseer waar de fouten vandaan komen.", r:"ME"},
+      {t:"Ik maak een praktische checklist en proces om fouten te vermijden.", r:"IMP"},
+      {t:"Ik hou het team gemotiveerd zonder verwijten.", r:"TW"},
+      {t:"Ik stel een slimme, andere aanpak voor die tijd wint.", r:"PL"},
+    ]},
+  { title:"Inhoudelijk complex", q:"Er is een moeilijk inhoudelijk onderdeel. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik ga naar buiten: experten, voorbeelden, extra bronnen.", r:"RI"},
+      {t:"Ik breng structuur: wie doet wat, tegen wanneer, en met welke criteria.", r:"CO"},
+      {t:"Ik werk het rationeel uit en toets de logica.", r:"ME"},
+      {t:"Ik zet het om naar uitvoerbare stappen.", r:"IMP"},
+      {t:"Ik neem het inhoudelijk op en ga diep in de materie.", r:"SP"},
+    ]},
+  { title:"Achter op schema", q:"Jullie zitten achter op schema. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik verhoog de druk en focus op ‘af krijgen’.", r:"SH"},
+      {t:"Ik help de samenwerking: wie blokkeert, wat is nodig?", r:"TW"},
+      {t:"Ik herverdeel taken en bewaak het doel.", r:"CO"},
+      {t:"Ik ga praktisch herschikken zodat het haalbaar wordt.", r:"IMP"},
+      {t:"Ik bekijk kritisch wat we kunnen schrappen zonder schade.", r:"ME"},
+    ]},
+  { title:"Presenteren", q:"Jullie moeten presenteren. Wat is jouw natuurlijke bijdrage?",
+    opts:[
+      {t:"Ik bedenk een originele insteek/structuur voor de presentatie.", r:"PL"},
+      {t:"Ik bewaak de afwerking: spelling, bronnen, consistentie.", r:"CF"},
+      {t:"Ik check logisch: klopt de redenering en is het overtuigend?", r:"ME"},
+      {t:"Ik regel wie welk stuk brengt en de timing.", r:"CO"},
+      {t:"Ik ga nog externe voorbeelden of inspiratie zoeken.", r:"RI"},
+    ]},
+  { title:"Samenwerking stroef", q:"Je voelt dat samenwerken stroef loopt. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik organiseer het werk opnieuw, met duidelijke taken en stappen.", r:"IMP"},
+      {t:"Ik zet aan tot actie en doorbreek de traagheid.", r:"SH"},
+      {t:"Ik probeer de communicatie te herstellen en begrip te creëren.", r:"TW"},
+      {t:"Ik analyseer wat er precies fout loopt.", r:"ME"},
+      {t:"Ik breng het terug naar het doel en de afspraken.", r:"CO"},
+    ]},
+  { title:"Aanpak verbeteren", q:"Een aanpak werkt niet. Wat doe jij meestal om te verbeteren?",
+    opts:[
+      {t:"Ik neem een gespecialiseerd stuk en verfijn de inhoud.", r:"SP"},
+      {t:"Ik kijk kritisch wat de oorzaak is en wat beter kan.", r:"ME"},
+      {t:"Ik bedenk een creatief alternatief.", r:"PL"},
+      {t:"Ik zorg dat het perfect afgewerkt wordt zodra we kiezen.", r:"CF"},
+      {t:"Ik bewaak dat iedereen mee is en we samenblijven.", r:"TW"},
+    ]},
+  { title:"Veel stakeholders", q:"Er zijn veel mensen/afdelingen die invloed hebben. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik ga contacten leggen en opportuniteiten verkennen.", r:"RI"},
+      {t:"Ik maak de uitvoering praktisch en planmatig.", r:"IMP"},
+      {t:"Ik zorg dat het team goed samenwerkt en info deelt.", r:"TW"},
+      {t:"Ik breng structuur in beslissingen en prioriteiten.", r:"CO"},
+      {t:"Ik push om vooruit te gaan ondanks ruis.", r:"SH"},
+    ]},
+  { title:"Eindfase", q:"Het eindproduct is bijna klaar. Wat doe jij meestal op het einde?",
+    opts:[
+      {t:"Ik controleer details en zorg dat alles klopt.", r:"CF"},
+      {t:"Ik maak het praktisch ‘deliverable’: structuur, upload, format.", r:"IMP"},
+      {t:"Ik bewaak de samenwerking zodat de finish haalbaar blijft.", r:"TW"},
+      {t:"Ik check rationeel: klopt de conclusie met de data?", r:"ME"},
+      {t:"Ik duw naar afronden: niet blijven twijfelen.", r:"SH"},
+    ]},
+  { title:"Feedback verwerken", q:"Jullie krijgen feedback die niet altijd duidelijk is. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik help het team samen te blijven en feedback goed te bespreken.", r:"TW"},
+      {t:"Ik maak er een uitdaging van en zet aan tot snelle verbetering.", r:"SH"},
+      {t:"Ik filter kritisch wat bruikbaar is en wat niet.", r:"ME"},
+      {t:"Ik ga extra uitleg of input zoeken bij de feedbackgever.", r:"RI"},
+      {t:"Ik maak een plan: wie past wat aan, tegen wanneer.", r:"CO"},
+    ]},
+  { title:"Veel kleine taken", q:"Er zijn veel kleine taken die blijven liggen. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik bedenk een slimmere aanpak zodat het sneller gaat.", r:"PL"},
+      {t:"Ik haal tools/voorbeelden van buitenaf om werk te versnellen.", r:"RI"},
+      {t:"Ik zet het in een praktische workflow en begin af te werken.", r:"IMP"},
+      {t:"Ik blijf kritisch wat echt nodig is en wat niet.", r:"ME"},
+      {t:"Ik zorg dat afwerking en kwaliteit niet verloren gaan.", r:"CF"},
+    ]},
+  { title:"Verschillende werkstijlen", q:"Je teamleden werken heel verschillend. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik breng structuur: duidelijke afspraken, rollen en doelen.", r:"CO"},
+      {t:"Ik zorg dat de samenwerking vriendelijk en werkbaar blijft.", r:"TW"},
+      {t:"Ik maak concrete to-do’s en hou de uitvoering draaiende.", r:"IMP"},
+      {t:"Ik duw door wanneer verschillen het tempo vertragen.", r:"SH"},
+      {t:"Ik neem een inhoudelijk stuk waar expertise nodig is.", r:"SP"},
+    ]},
+  { title:"Twee oplossingen", q:"Er zijn twee oplossingen: één riskant maar origineel, één veilig maar saai. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik bewaak de afwerking en kies wat we foutloos kunnen opleveren.", r:"CF"},
+      {t:"Ik analyseer risico’s en kies rationeel.", r:"ME"},
+      {t:"Ik verken extern: wat doen anderen, wat werkt in de praktijk?", r:"RI"},
+      {t:"Ik help het team beslissen en achter één keuze staan.", r:"CO"},
+      {t:"Ik stel een creatief compromis voor dat beiden combineert.", r:"PL"},
+    ]},
+  { title:"Onverwacht extra werk", q:"Er komt onverwacht extra werk bij. Hoe reageer jij meestal?",
+    opts:[
+      {t:"Ik pak het praktisch vast en organiseer herverdeling.", r:"IMP"},
+      {t:"Ik zet meteen druk op actie: we moeten schakelen.", r:"SH"},
+      {t:"Ik breng structuur in prioriteiten en beslissingen.", r:"CO"},
+      {t:"Ik ondersteun het team zodat stress niet escaleert.", r:"TW"},
+      {t:"Ik controleer kritisch wat haalbaar is in de tijd.", r:"ME"},
+    ]},
+  { title:"Nieuwe materie", q:"Er is een thema dat je team niet goed kent. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik neem het op me om expert te worden op dat thema.", r:"SP"},
+      {t:"Ik bedenk een creatieve manier om het toch begrijpelijk te maken.", r:"PL"},
+      {t:"Ik analyseer wat we precies moeten kennen en wat niet.", r:"ME"},
+      {t:"Ik maak afspraken en verdeel het leerwerk slim.", r:"CO"},
+      {t:"Ik ga extern zoeken naar snelle, betrouwbare bronnen.", r:"RI"},
+    ]},
+  { title:"Opleveren", q:"De inhoud is klaar, maar het moet nog ‘mooi’ en correct worden opgeleverd. Wat doe jij meestal?",
+    opts:[
+      {t:"Ik bewaak details en werk het nauwkeurig af.", r:"CF"},
+      {t:"Ik zorg praktisch voor layout, structuur en export.", r:"IMP"},
+      {t:"Ik hou de samenwerking vlot tot het einde.", r:"TW"},
+      {t:"Ik check rationeel of alles consistent is.", r:"ME"},
+      {t:"Ik duw om het nu echt af te ronden.", r:"SH"},
+    ]},
+  { title:"Na het project", q:"Na afloop van het project: wat doe jij meestal om eruit te leren?",
+    opts:[
+      {t:"Ik ga feedback of best practices van buitenaf verzamelen.", r:"RI"},
+      {t:"Ik vat samen wat we bereikt hebben en welke beslissingen werkten.", r:"CO"},
+      {t:"Ik bedenk nieuwe ideeën om het volgende keer beter te doen.", r:"PL"},
+      {t:"Ik analyseer wat objectief goed/fout ging en waarom.", r:"ME"},
+      {t:"Ik check hoe het team zich voelde en wat samenwerking nodig had.", r:"TW"},
+    ]},
+];
+
+const answers = Array(QUESTIONS.length).fill(null);
+let idx = 0;
+
+const qCountEl = document.getElementById("qCount");
+const qTitleEl = document.getElementById("qTitle");
+const qTextEl  = document.getElementById("qText");
+const optionsEl= document.getElementById("options");
+const fillEl   = document.getElementById("fill");
+const pctEl    = document.getElementById("pct");
+const prevBtn  = document.getElementById("prevBtn");
+const nextBtn  = document.getElementById("nextBtn");
+const toastEl  = document.getElementById("toast");
+
+const quizSec  = document.getElementById("quiz");
+const resSec   = document.getElementById("results");
+const resContent = document.getElementById("resultsContent");
+const restartBtn = document.getElementById("restartBtn");
+const copyBtn = document.getElementById("copyBtn");
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.style.display = "block";
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> toastEl.style.display="none", 1800);
+}
+function setProgress(){
+  const p = Math.round(((idx+1)/QUESTIONS.length)*100);
+  fillEl.style.width = p + "%";
+  pctEl.textContent = p + "%";
+}
+
+function render(){
+  const q = QUESTIONS[idx];
+  qCountEl.textContent = `Vraag ${idx+1} van ${QUESTIONS.length}`;
+  qTitleEl.textContent = q.title;
+  qTextEl.textContent  = q.q;
+
+  setProgress();
+  prevBtn.disabled = idx === 0;
+
+  optionsEl.innerHTML = "";
+  nextBtn.disabled = true;
+
+  q.opts.forEach((o,i)=>{
+    const row = document.createElement("div");
+    row.className = "opt";
+    row.dataset.index = String(i);
+    row.innerHTML = `
+      <div class="emoji">${EMOJI[i]}</div>
+      <div class="optText">${esc(o.t)}</div>
+      <div class="radio" aria-hidden="true"></div>
+    `;
+    row.addEventListener("click", ()=>select(i));
+    optionsEl.appendChild(row);
+  });
+
+  if(answers[idx]){
+    const role = answers[idx];
+    const i = q.opts.findIndex(x=>x.r===role);
+    if(i >= 0) select(i, true);
+  }
+}
+
+function select(i, silent=false){
+  optionsEl.querySelectorAll(".opt").forEach(el=>el.classList.remove("selected"));
+  const el = optionsEl.querySelector(`.opt[data-index="${i}"]`);
+  if(!el) return;
+  el.classList.add("selected");
+
+  answers[idx] = QUESTIONS[idx].opts[i].r;
+  nextBtn.disabled = false;
+
+  if(!silent){
+    el.animate([{transform:"translateY(0)"},{transform:"translateY(-2px)"},{transform:"translateY(0)"}],
+               {duration:180, easing:"cubic-bezier(.2,.9,.2,1)"});
+  }
+}
+
+function next(){
+  if(!answers[idx]) return showToast("Kies eerst een optie.");
+  if(idx === QUESTIONS.length - 1) return showResults();
+  idx++;
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function prev(){
+  if(idx === 0) return;
+  idx--;
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function showResults(){
+  const firstNull = answers.findIndex(x=>x===null);
+  if(firstNull !== -1){
+    idx = firstNull;
+    render();
+    return showToast(`Vraag ${idx+1} is nog niet beantwoord.`);
+  }
+
+  const scores = {PL:0,RI:0,CO:0,SH:0,ME:0,TW:0,IMP:0,CF:0,SP:0};
+  answers.forEach(r => scores[r]++);
+
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const [pCode,pScore] = sorted[0];
+  const [sCode,sScore] = sorted[1];
+
+  const rows = sorted.map(([code,pts]) =>
+    `<tr><td>${esc(ROLE[code].name)}</td><td class="right"><b>${pts}</b></td></tr>`
+  ).join("");
+
+  const explain = Object.keys(ROLE).map(code =>
+    `<div style="margin:8px 0;"><b>${esc(ROLE[code].name)}:</b> ${esc(ROLE[code].desc)}</div>`
+  ).join("");
+
+  resContent.innerHTML = `
+    <div class="resultsTitle">Jouw profiel</div>
+
+    <div class="pills">
+      <div class="pill">
+        <div class="k">Toprol</div>
+        <div class="v">${esc(ROLE[pCode].name)} <span style="color:var(--muted);font-weight:800">(${pScore})</span></div>
+        <div class="d">${esc(ROLE[pCode].desc)}</div>
+      </div>
+      <div class="pill">
+        <div class="k">Tweede rol</div>
+        <div class="v">${esc(ROLE[sCode].name)} <span style="color:var(--muted);font-weight:800">(${sScore})</span></div>
+        <div class="d">${esc(ROLE[sCode].desc)}</div>
+      </div>
+    </div>
+
+    <table aria-label="Scores">
+      <thead><tr><th>Rol</th><th class="right">Score</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <details>
+      <summary>Uitleg van alle rollen</summary>
+      <div style="color:var(--muted);font-size:.92rem;line-height:1.25;margin-top:8px;">${explain}</div>
+    </details>
+  `;
+
+  quizSec.style.display = "none";
+  resSec.style.display = "block";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function restart(){
+  for(let i=0;i<answers.length;i++) answers[i]=null;
+  idx = 0;
+  resSec.style.display = "none";
+  quizSec.style.display = "block";
+  render();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+function copyResults(){
+  const scores = {PL:0,RI:0,CO:0,SH:0,ME:0,TW:0,IMP:0,CF:0,SP:0};
+  answers.forEach(r => scores[r]++);
+  const sorted = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+
+  const lines = [];
+  lines.push("Erasmushogeschool Brussel — Teamroltest (resultaat)");
+  lines.push(`Toprol: ${ROLE[sorted[0][0]].name} (${sorted[0][1]})`);
+  lines.push(`Tweede rol: ${ROLE[sorted[1][0]].name} (${sorted[1][1]})`);
+  lines.push("");
+  lines.push("Scores (hoog → laag):");
+  sorted.forEach(([c,p])=>lines.push(`- ${ROLE[c].name}: ${p}`));
+  const txt = lines.join("\n");
+
+  (navigator.clipboard?.writeText(txt) ?? Promise.reject())
+    .then(()=> showToast("Resultaat gekopieerd."))
+    .catch(()=>{
+      const ta=document.createElement("textarea");
+      ta.value=txt; document.body.appendChild(ta);
+      ta.select(); document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast("Resultaat gekopieerd.");
+    });
+}
+
+/* events */
+nextBtn.addEventListener("click", next);
+prevBtn.addEventListener("click", prev);
+restartBtn.addEventListener("click", restart);
+copyBtn.addEventListener("click", copyResults);
+
+/* keyboard shortcuts: 1..5 selects; Enter next; Shift+Enter prev */
+window.addEventListener("keydown", (e)=>{
+  if(resSec.style.display !== "none") return;
+
+  if(e.key >= "1" && e.key <= "5"){
+    const i = Number(e.key) - 1;
+    if(i>=0 && i<5) select(i);
+  }
+  if(e.key === "Enter"){
+    e.preventDefault();
+    if(e.shiftKey) prev();
+    else next();
+  }
+});
+
+/* init */
+render();
+</script>
+</body>
+</html>
